@@ -55,6 +55,8 @@ interface CnProblemDetailShape {
     codeSnippets?: Array<{ lang: string; langSlug: string; code: string }> | null;
     sampleTestCase?: string | null;
     exampleTestcases?: string | null;
+    exampleTestcaseList?: string[] | null;
+    metaData?: string | null;
     hints?: string[] | null;
     stats?: string | null;
   };
@@ -223,6 +225,8 @@ export function normalizeCnProblemDetail(input: CnProblemDetailShape): ProblemDe
     topicTags,
     codeSnippets: question.codeSnippets ?? null,
     sampleTestCase: question.sampleTestCase ?? '',
+    exampleTestcaseList: question.exampleTestcaseList ?? undefined,
+    metaData: question.metaData ?? undefined,
     exampleTestcases: question.exampleTestcases ?? '',
     hints: question.hints ?? [],
     companyTags: null,

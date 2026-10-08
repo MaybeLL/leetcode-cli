@@ -48,6 +48,7 @@ export const PROBLEM_DETAIL_QUERY = `
       }
       sampleTestCase
       exampleTestcases
+      exampleTestcaseList
       hints
       companyTags {
         name

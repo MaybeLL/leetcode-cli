@@ -128,6 +128,8 @@ describe('cn adapters', () => {
         ],
         sampleTestCase: '[2,7,11,15]\n9',
         exampleTestcases: '[2,7,11,15]\n9',
+        exampleTestcaseList: ['[2,7,11,15]\n9', '[3,3]\n6'],
+        metaData: '{"name":"twoSum"}',
         hints: ['Use a hash map.'],
         stats: '{}',
       },
@@ -146,6 +148,8 @@ describe('cn adapters', () => {
       status: 'ac',
       sampleTestCase: '[2,7,11,15]\n9',
       exampleTestcases: '[2,7,11,15]\n9',
+      exampleTestcaseList: ['[2,7,11,15]\n9', '[3,3]\n6'],
+      metaData: '{"name":"twoSum"}',
     });
     expect(result.topicTags).toEqual([{ name: '数组', slug: 'array' }]);
     expect(result.companyTags).toBeNull();

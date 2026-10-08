@@ -12,7 +12,7 @@
     "url": "https://github.com/night-slayer18/leetcode-cli.git"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean --minify --treeshake",
+    "build": "tsup src/index.ts src/client.ts --format esm --dts --clean --minify --treeshake --no-splitting",
     "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js",
     "test": "vitest run",
@@ -23,7 +23,8 @@
     "format": "prettier --write \"**/*.{ts,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,json,md,yml,yaml}\"",
     "release": "node release.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:sdk": "tsup src/client.ts --format esm --dts --clean --out-dir build/client-package --no-splitting && node scripts/package-sdk.mjs"
   },
   "keywords": [
     "leetcode",
@@ -80,5 +81,15 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    }
   }
 }

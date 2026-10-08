@@ -1,5 +1,9 @@
 # leetcode-cli
 
+This fork's `pi-sdk` branch adds a library-only client and resumable judge
+operations for Pi. See [SDK changes and packaging](docs/sdk.md). The upstream
+CLI documentation follows below.
+
 A modern, feature-rich LeetCode CLI built with TypeScript.
 
 [![CI](https://github.com/night-slayer18/leetcode-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/night-slayer18/leetcode-cli/actions/workflows/ci.yml)

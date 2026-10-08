@@ -3,7 +3,6 @@ import {
   DAILY_CHALLENGE_QUERY as DAILY_CHALLENGE_QUERY_GLOBAL,
   CONTEST_DETAIL_QUERY as CONTEST_DETAIL_QUERY_GLOBAL,
   RANDOM_PROBLEM_QUERY,
-  USER_STATUS_QUERY,
   type QueryPack,
 } from './queries.global.js';
 
@@ -55,6 +54,7 @@ export const PROBLEM_DETAIL_QUERY_CN = `
       isLiked
       similarQuestions
       exampleTestcases
+      exampleTestcaseList
       contributors {
         username
         profileUrl
@@ -212,7 +212,7 @@ export const SUBMISSION_DETAILS_QUERY_CN = `
 export const CN_QUERY_PACK: QueryPack = {
   PROBLEM_LIST_QUERY: PROBLEM_LIST_QUERY_CN,
   PROBLEM_DETAIL_QUERY: PROBLEM_DETAIL_QUERY_CN,
-  USER_STATUS_QUERY,
+  USER_STATUS_QUERY: `query { userStatus { isSignedIn username userSlug } }`,
   USER_PROFILE_QUERY: USER_PROFILE_QUERY_CN,
   SKILL_STATS_QUERY: SKILL_STATS_QUERY_CN,
   DAILY_CHALLENGE_QUERY: DAILY_CHALLENGE_QUERY_CN,

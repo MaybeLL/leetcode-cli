@@ -237,18 +237,18 @@ export function displaySubmissionResult(result: SubmissionResult): void {
     console.log();
     console.log(
       chalk.gray('Runtime:'),
-      chalk.white(result.status_runtime),
+      chalk.white(result.status_runtime ?? 'N/A'),
       chalk.gray(`(beats ${result.runtime_percentile?.toFixed(1) ?? 'N/A'}%)`)
     );
     console.log(
       chalk.gray('Memory:'),
-      chalk.white(result.status_memory),
+      chalk.white(result.status_memory ?? 'N/A'),
       chalk.gray(`(beats ${result.memory_percentile?.toFixed(1) ?? 'N/A'}%)`)
     );
   } else {
     console.log(chalk.red.bold(`❌ ${result.status_msg}`));
     console.log();
-    console.log(chalk.gray(`Passed ${result.total_correct}/${result.total_testcases} testcases`));
+    console.log(chalk.gray(`Passed ${result.total_correct ?? '?'}/${result.total_testcases ?? '?'} testcases`));
 
     if (result.code_output) {
       console.log(chalk.gray('Your Output:'), result.code_output);

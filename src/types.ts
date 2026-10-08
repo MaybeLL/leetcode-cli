@@ -27,6 +27,8 @@ export interface ProblemDetail extends Problem {
   codeSnippets: CodeSnippet[] | null;
   sampleTestCase: string;
   exampleTestcases: string;
+  exampleTestcaseList?: string[];
+  metaData?: string;
   hints: string[];
   companyTags: CompanyTag[] | null;
   stats: string;
@@ -101,13 +103,13 @@ export interface SubmissionResult {
   status_code: number;
   status_msg: string;
   state: string;
-  run_success: boolean;
-  total_correct: number;
-  total_testcases: number;
-  status_runtime: string;
-  status_memory: string;
-  runtime_percentile: number | null;
-  memory_percentile: number | null;
+  run_success?: boolean;
+  total_correct?: number;
+  total_testcases?: number;
+  status_runtime?: string;
+  status_memory?: string;
+  runtime_percentile?: number | null;
+  memory_percentile?: number | null;
   code_output?: string;
   std_output?: string;
   expected_output?: string;
@@ -120,7 +122,7 @@ export interface TestResult {
   status_code: number;
   status_msg: string;
   state: string;
-  run_success: boolean;
+  run_success?: boolean;
   code_answer?: string[];
   expected_code_answer?: string[];
   correct_answer?: boolean;

@@ -1,6 +1,17 @@
 // LeetCode API Client
 import got, { Got } from 'got';
 import { z } from 'zod';
+import { setTimeout as delay } from 'node:timers/promises';
+import {
+  startJob,
+  checkJob,
+  ClientError,
+  type Job,
+  type JobOptions,
+  type JobStatus,
+  type RunRequest,
+  type SubmitRequest,
+} from './jobs.js';
 import type {
   Contest,
   ContestDetail,
@@ -89,10 +100,10 @@ export class LeetCodeClient {
   private site: LeetCodeSite;
   private queries: QueryPack;
 
-  constructor(site: LeetCodeSite = 'leetcode.com') {
+  constructor(site: LeetCodeSite = 'leetcode.com', transport?: Got) {
     this.site = site;
     this.queries = getQueryPack(site);
-    this.client = this.createHttpClient(site);
+    this.client = transport ?? this.createHttpClient(site);
   }
 
   private createHttpClient(site: LeetCodeSite): Got {
@@ -204,7 +215,7 @@ export class LeetCodeClient {
     throw new Error(`Failed to fetch ${OPERATION_LABEL[operation]}`);
   }
 
-  async checkAuth(): Promise<{ isSignedIn: boolean; username: string | null }> {
+  async checkAuth(): Promise<{ isSignedIn: boolean; username: string | null; userSlug?: string | null }> {
     const data = await this.graphql<{
       userStatus: { isSignedIn: boolean; username: string | null };
     }>('USER_STATUS', this.queries.USER_STATUS_QUERY);
@@ -512,6 +523,18 @@ export class LeetCodeClient {
     return validated;
   }
 
+  async startRun(request: RunRequest, options?: JobOptions): Promise<Job> {
+    return startJob(this.client, 'run', request, options);
+  }
+
+  async startSubmit(request: SubmitRequest, options?: JobOptions): Promise<Job> {
+    return startJob(this.client, 'submit', request, options);
+  }
+
+  async checkJob(job: Job, options?: JobOptions): Promise<JobStatus> {
+    return checkJob(this.client, job, options);
+  }
+
   async testSolution(
     titleSlug: string,
     code: string,
@@ -519,18 +542,8 @@ export class LeetCodeClient {
     testcases: string,
     questionId: string
   ): Promise<TestResult> {
-    const response = await this.client
-      .post(`problems/${titleSlug}/interpret_solution/`, {
-        json: {
-          data_input: testcases,
-          lang,
-          typed_code: code,
-          question_id: questionId,
-        },
-      })
-      .json<{ interpret_id: string }>();
-
-    return this.pollSubmission<TestResult>(response.interpret_id, 'interpret', TestResultSchema);
+    const job = await this.startRun({ titleSlug, code, lang, testcases, questionId });
+    return this.pollSubmission(job, TestResultSchema);
   }
 
   async submitSolution(
@@ -539,55 +552,25 @@ export class LeetCodeClient {
     lang: string,
     questionId: string
   ): Promise<SubmissionResult> {
-    const response = await this.client
-      .post(`problems/${titleSlug}/submit/`, {
-        json: {
-          lang,
-          typed_code: code,
-          question_id: questionId,
-        },
-      })
-      .json<{ submission_id: number }>();
-
-    return this.pollSubmission<SubmissionResult>(
-      response.submission_id.toString(),
-      'submission',
-      SubmissionResultSchema
-    );
+    const job = await this.startSubmit({ titleSlug, code, lang, questionId });
+    return this.pollSubmission(job, SubmissionResultSchema);
   }
 
-  private async pollSubmission<T>(
-    id: string,
-    type: 'interpret' | 'submission',
-    schema: z.ZodSchema<T>
-  ): Promise<T> {
-    const endpoint = `submissions/detail/${id}/check/`;
-
-    const maxAttempts = 12;
-    const initialDelay = 500;
-    const maxDelay = 3000;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        const result = await this.client.get(endpoint).json<T & { state: string }>();
-
-        if (result.state === 'SUCCESS' || result.state === 'FAILURE') {
-          return schema.parse(result);
-        }
-      } catch (error) {
-        if (attempt === maxAttempts - 1) {
-          const action = type === 'interpret' ? 'Test' : 'Submission';
-          throw new Error(
-            `${action} check failed: ${error instanceof Error ? error.message : 'Network error'}`
-          );
-        }
+  private async pollSubmission<T>(job: Job, schema: z.ZodSchema<T>): Promise<T> {
+    const signal = AbortSignal.timeout(30000);
+    try {
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const status = await this.checkJob(job, { signal });
+        if (status.state === 'complete') return schema.parse(status.result);
+        await delay(Math.min(500 * 2 ** attempt, 3000), undefined, { signal });
       }
-      const delay = Math.min(initialDelay * Math.pow(2, attempt), maxDelay);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+    } catch (error) {
+      if (!signal.aborted) throw error;
     }
-
-    const action = type === 'interpret' ? 'Test' : 'Submission';
-    throw new Error(`${action} timeout: Result not available after 30 seconds`);
+    throw new ClientError(
+      'network',
+      `Stopped waiting for task ${job.id}; resume with checkJob, do not resend.`
+    );
   }
 }
 
