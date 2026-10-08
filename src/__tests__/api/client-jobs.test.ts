@@ -85,6 +85,22 @@ describe('SDK send/check HTTP contract', () => {
       ['GET', `/submissions/detail/${id}/check/`],
     ]);
   });
+  it('decodes CN compile errors with null testcase statistics without inventing counts', async () => {
+    handler = (_req, res) => res.end(JSON.stringify({
+      state: 'SUCCESS', status_code: 20, status_msg: 'Compile Error',
+      compile_error: 'undefined: undefinedVariable', full_compile_error: 'undefined: undefinedVariable',
+      total_correct: null, total_testcases: null,
+      code_answer: [], code_output: [], std_output_list: [],
+      runtime_percentile: null, memory_percentile: null,
+    }));
+    const status = await client.checkJob({ id: 'runcode_1700000000.123_fixture', kind: 'run' });
+    expect(status.state).toBe('complete');
+    if (status.state !== 'complete') throw new Error('expected terminal compile result');
+    expect(status.result.compile_error).toBe('undefined: undefinedVariable');
+    expect(status.result.total_correct).toBeUndefined();
+    expect(status.result.total_testcases).toBeUndefined();
+    expect(requests.map((r) => r.method)).toEqual(['GET']);
+  });
   it.each([
     { state: 'SUCCESS', status_code: 10, status_msg: 'Accepted' },
     { state: 'SUCCESS', status_code: 11, expected_output: '[0,1]', code_output: '[]' },

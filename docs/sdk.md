@@ -56,3 +56,7 @@ include the job ID in timeout messages so callers can check without resending.
 SDK imports do not load CLI, storage, keychain, editor, collaboration or user
 configuration. Tests use fake or local HTTP only. Actual account judging is a
 separate acceptance step, not proven by these tests.
+
+CN compile-error responses may send null testcase counts. The SDK normalizes
+these to absent counts while retaining the terminal verdict and diagnostics;
+null counts never imply zero tests passed or a successful run.
