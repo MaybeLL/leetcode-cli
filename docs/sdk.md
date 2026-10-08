@@ -14,6 +14,11 @@ got and Zod as dependencies. `npm pack ./build/client-package` creates a local
 distribution; this is not an npm registry publication. SOURCE.json records the
 exact fork revision and whether its tree was dirty. Release only clean builds.
 
+SDK 3.5.2-pi.2 accepts LeetCode run IDs containing decimal timestamps (embedded
+dots). The initial validator incorrectly treated these successful send responses
+as missing IDs. Dot-only/traversal segments, slashes, queries and fragments remain
+invalid. A regression checks send and check using the same dotted ID.
+
 ```ts
 import { LeetCodeClient } from '@maybell/leetcode-client';
 const client = new LeetCodeClient('leetcode.cn');

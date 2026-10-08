@@ -12,7 +12,7 @@ const source = {
 };
 const pkg = {
   name: '@maybell/leetcode-client',
-  version: '3.5.2-pi.1',
+  version: '3.5.2-pi.2',
   type: 'module',
   description: 'Library-only LeetCode client for Pi; derived from night-slayer18/leetcode-cli',
   main: './client.js',

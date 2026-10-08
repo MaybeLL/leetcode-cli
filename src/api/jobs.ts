@@ -36,6 +36,8 @@ export interface Job {
   id: string;
   kind: 'run' | 'submit';
 }
+// Run IDs contain a decimal timestamp. Permit embedded dots, never path segments.
+const jobIdPattern = /^[a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*$/;
 
 // Error verdicts often omit success-only statistics. Preserve absence, never invent them.
 export const JobResultSchema = z.object({
@@ -118,7 +120,7 @@ export async function startJob(
     const id = response?.[kind === 'run' ? 'interpret_id' : 'submission_id'];
     if (
       !(
-        (typeof id === 'string' && /^[a-zA-Z0-9_-]+$/.test(id)) ||
+        (typeof id === 'string' && jobIdPattern.test(id)) ||
         (typeof id === 'number' && Number.isSafeInteger(id) && id > 0)
       )
     )
@@ -130,7 +132,7 @@ export async function startJob(
 }
 
 export async function checkJob(http: Got, job: Job, opts: JobOptions = {}): Promise<JobStatus> {
-  if (!/^[a-zA-Z0-9_-]+$/.test(job.id) || !['run', 'submit'].includes(job.kind))
+  if (!jobIdPattern.test(job.id) || !['run', 'submit'].includes(job.kind))
     throw new ClientError('protocol', 'Invalid job.');
   const requestOptions = options(opts.signal);
   try {

@@ -69,6 +69,22 @@ describe('SDK send/check HTTP contract', () => {
     expect(result.total_correct).toBeUndefined();
     expect(requests.map((r) => r.method)).toEqual(['POST', 'GET']);
   });
+  it('accepts dotted platform run IDs and checks that exact task without resending', async () => {
+    const id = 'runcode_1700000000.123456_demo';
+    handler = (req, res) =>
+      res.end(
+        req.method === 'POST'
+          ? JSON.stringify({ interpret_id: id })
+          : '{"state":"SUCCESS","status_code":10,"correct_answer":true}'
+      );
+    const job = await client.startRun({ ...request, testcases: '[3,3]\n6' });
+    expect(job.id).toBe(id);
+    expect(await client.checkJob(job)).toMatchObject({ state: 'complete' });
+    expect(requests.map((r) => [r.method, r.path])).toEqual([
+      ['POST', '/problems/two-sum/interpret_solution/'],
+      ['GET', `/submissions/detail/${id}/check/`],
+    ]);
+  });
   it.each([
     { state: 'SUCCESS', status_code: 10, status_msg: 'Accepted' },
     { state: 'SUCCESS', status_code: 11, expected_output: '[0,1]', code_output: '[]' },
@@ -157,9 +173,10 @@ describe('SDK send/check HTTP contract', () => {
     expect(requests.length).toBe(1);
   });
   it('rejects unsafe job paths without network calls', async () => {
-    await expect(client.checkJob({ id: '../other', kind: 'run' })).rejects.toMatchObject({
-      kind: 'protocol',
-    });
+    for (const id of ['../other', '..', '.', 'a..b', 'a?x=1', 'a#b'])
+      await expect(client.checkJob({ id, kind: 'run' })).rejects.toMatchObject({
+        kind: 'protocol',
+      });
     await expect(client.startSubmit({ ...request, titleSlug: '../other' })).rejects.toMatchObject({
       kind: 'protocol',
     });
