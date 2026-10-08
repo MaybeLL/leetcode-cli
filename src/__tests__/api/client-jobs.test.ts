@@ -91,6 +91,14 @@ describe('SDK send/check HTTP contract', () => {
     { state: 'FAILURE', status_code: 20, compile_error: 'bad code' },
     { state: 'SUCCESS', status_code: 15, runtime_error: 'panic' },
     { state: 'SUCCESS', status_code: 14, status_msg: 'Time Limit Exceeded' },
+    {
+      state: 'SUCCESS',
+      status_code: 10,
+      correct_answer: true,
+      code_answer: ['[1,2]'],
+      code_output: ['[1,2]'],
+      expected_code_answer: ['[1,2]'],
+    },
   ])('preserves terminal verdict and absent statistics: $status_code', async (result) => {
     handler = (_req, res) => res.end(JSON.stringify(result));
     expect(await client.checkJob({ id: '123', kind: 'submit' })).toEqual({

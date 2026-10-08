@@ -54,7 +54,7 @@ export const JobResultSchema = z.object({
   memory_percentile: z.number().nullable().optional(),
   code_answer: z.array(z.string()).optional(),
   expected_code_answer: z.array(z.string()).optional(),
-  code_output: z.string().optional(),
+  code_output: z.union([z.string(), z.array(z.string())]).optional(),
   last_testcase_output: z.string().optional(),
   expected_output: z.string().optional(),
   std_output: z.string().optional(),

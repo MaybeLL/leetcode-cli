@@ -19,6 +19,10 @@ dots). The initial validator incorrectly treated these successful send responses
 as missing IDs. Dot-only/traversal segments, slashes, queries and fragments remain
 invalid. A regression checks send and check using the same dotted ID.
 
+SDK 3.5.2-pi.3 also accepts array-valued code_output in online-run results, as
+observed on the same real CN task. Both string and string-array output forms are
+preserved. Run sample success does not imply a formal submission was accepted.
+
 ```ts
 import { LeetCodeClient } from '@maybell/leetcode-client';
 const client = new LeetCodeClient('leetcode.cn');
